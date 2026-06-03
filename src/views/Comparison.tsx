@@ -36,6 +36,7 @@ const ComparisonView: React.FC = () => {
   const [days, setDays]                     = useState(360);
   const [selected, setSelected]             = useState<SelectedItem[]>([]);
   const [searchOpen, setSearchOpen]         = useState(false);
+  const [isDaysDropdownOpen, setIsDaysDropdownOpen] = useState(false);
   const [mode, setMode]                     = useState<'FIXED' | 'VARIABLE'>('FIXED');
   const [drawerOpen, setDrawerOpen]         = useState(false);
   const [activeDetail, setActiveDetail]     = useState<ComparisonItem | null>(null);
@@ -111,9 +112,10 @@ const ComparisonView: React.FC = () => {
         const gain = computeGain(investment, a.annual_return, days);
         
         // Retorno Real en COP (Fase 3): [ (1 + retorno_usd) * (1 + cambio_trm) - 1 ]
-        const trmProxy = days > 180 ? (trmChange30d * 12) : trmChange30d;
+        const trmProxy = trmChange30d * 12; // Anualización simple para unificar en base E.A.
         const totalGrowthFactor = (1 + (a.annual_return / 100)) * (1 + (trmProxy / 100));
-        const gainCOP = investment * (totalGrowthFactor - 1);
+        // Capitalización compuesta sobre el horizonte de días
+        const gainCOP = investment * (Math.pow(totalGrowthFactor, days / 365) - 1);
 
         return {
           _type:       'ASSET',
@@ -206,20 +208,59 @@ const ComparisonView: React.FC = () => {
                 />
               </div>
             </div>
-            <div className='flex flex-col justify-center'>
+            <div className='flex flex-col justify-center relative'>
               <label className='block text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1'>Horizonte de Tiempo</label>
               <div className='relative group h-[56px]'>
-                <div className='w-full px-6 py-4 bg-slate-50/50 rounded-2xl flex items-center justify-between cursor-pointer group-hover:bg-slate-100/50 transition-all border border-transparent h-full'>
-                  <select value={days} onChange={e => setDays(Number(e.target.value))} className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'>
-                    <option value={90}>90 Días (3 Meses)</option>
-                    <option value={180}>180 Días (6 Meses)</option>
-                    <option value={360}>360 Días (Un Año)</option>
-                  </select>
+                {/* Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDaysDropdownOpen(!isDaysDropdownOpen)}
+                  className='w-full px-6 py-4 bg-slate-50/50 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-slate-100/50 transition-all border border-transparent h-full'
+                >
                   <span className='text-sm font-bold text-primary'>
                     {days === 90  ? '90 Días (3 Meses)'   : days === 180 ? '180 Días (6 Meses)'  : '360 Días (Un Año)'}
                   </span>
-                  <ChevronDown size={16} className='text-slate-300 group-hover:text-primary transition-colors' />
-                </div>
+                  <ChevronDown size={16} className={cn('text-slate-300 group-hover:text-primary transition-transform duration-200', isDaysDropdownOpen ? 'rotate-180 text-primary' : 'rotate-0')} />
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isDaysDropdownOpen && (
+                    <>
+                      {/* Click outside backdrop */}
+                      <div className='fixed inset-0 z-20' onClick={() => setIsDaysDropdownOpen(false)} />
+                      
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
+                        className='absolute left-0 right-0 mt-2 bg-white border border-slate-100 rounded-[22px] shadow-2xl p-3 z-30 flex flex-col gap-1 overflow-hidden'
+                      >
+                        {[90, 180, 360].map(plazo => {
+                          const isCurrent = days === plazo;
+                          const label = plazo === 90 ? '90 Días (3 Meses)' : plazo === 180 ? '180 Días (6 Meses)' : '360 Días (Un Año)';
+                          return (
+                            <div
+                              key={plazo}
+                              onClick={() => {
+                                setDays(plazo);
+                                setIsDaysDropdownOpen(false);
+                              }}
+                              className={cn(
+                                'px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center transition-all text-xs font-bold',
+                                isCurrent ? 'bg-primary text-white shadow-sm' : 'hover:bg-slate-50 text-primary'
+                              )}
+                            >
+                              <span>{label}</span>
+                              {isCurrent && <div className='w-1.5 h-1.5 rounded-full bg-white shrink-0' />}
+                            </div>
+                          );
+                        })}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>

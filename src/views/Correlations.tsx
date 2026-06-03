@@ -193,7 +193,7 @@ const CorrelationsView: React.FC = () => {
     { t1: "VOO", t2: "VTI", name: "VOO / VTI (US Total)" },
     { t1: "AAPL", t2: "MSFT", name: "Apple / Microsoft" },
     { t1: "GLD", t2: "SLV", name: "Oro / Plata" },
-    { t1: "ECOPETROL.CB", t2: "PFCORFICOL.CB", name: "Ecopetrol / Corficol" },
+    { t1: "ECOPETROL", t2: "CORFICOLCF", name: "Ecopetrol / Corficol" },
   ];
 
   return (

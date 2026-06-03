@@ -15,7 +15,12 @@ import {
   BacktestResult,
   TRMMetrics,
   AssetVolatility,
-  AssetPairCorrelation
+  AssetPairCorrelation,
+  AnalysisReport,
+  RetrospectiveRequest,
+  RetrospectiveResult,
+  PortfolioComparison,
+  AssetHighlightsResponse
 } from '../types';
 
 // --- CDTs ---
@@ -60,6 +65,16 @@ export const useAssets = (params?: { type?: 'etf' | 'stock'; days?: number; inve
       } else {
         console.warn('API returned non-array or empty data for assets:', data);
       }
+      return data;
+    },
+  });
+};
+
+export const useAssetHighlights = (type: 'etf' | 'stock' = 'etf') => {
+  return useQuery({
+    queryKey: ['assets', 'highlights', type],
+    queryFn: async () => {
+      const { data } = await api.get<AssetHighlightsResponse>('/assets/highlights', { params: { type } });
       return data;
     },
   });
@@ -198,8 +213,66 @@ export const usePortfolioRecommendations = (portfolioId: number) => {
 // --- Backtesting ---
 export const useBacktest = () => {
   return useMutation({
-    mutationFn: async ({ portfolioId, start_date, end_date }: { portfolioId: number; start_date: string; end_date: string }) => {
-      const { data } = await api.post<ApiResponse<BacktestResult>>(`/portfolios/${portfolioId}/backtest`, { start_date, end_date });
+    mutationFn: async ({ 
+      portfolioId, 
+      start_date, 
+      end_date, 
+      brokerage_fee_percentage, 
+      brokerage_fee_min_cop 
+    }: { 
+      portfolioId: number; 
+      start_date: string; 
+      end_date: string; 
+      brokerage_fee_percentage?: number; 
+      brokerage_fee_min_cop?: number; 
+    }) => {
+      const { data } = await api.post<ApiResponse<BacktestResult>>(
+        `/portfolios/${portfolioId}/backtest`, 
+        { start_date, end_date, brokerage_fee_percentage, brokerage_fee_min_cop }
+      );
+      return data;
+    },
+  });
+};
+
+// --- Portfolio Analysis (Caja de Cristal & Human Analysis) ---
+export const usePortfolioAnalysis = (portfolioId: number, params?: { currency?: string; lookback_days?: number }) => {
+  return useQuery({
+    queryKey: ['portfolios', portfolioId, 'analysis', params],
+    queryFn: async () => {
+      const { data } = await api.get<AnalysisReport>(`/portfolios/${portfolioId}/analysis`, { params });
+      return data;
+    },
+    enabled: !!portfolioId,
+  });
+};
+
+export const useAssetAnalysis = (ticker: string, params?: { currency?: string; lookback_days?: number }) => {
+  return useQuery({
+    queryKey: ['assets', ticker, 'analysis', params],
+    queryFn: async () => {
+      const { data } = await api.get<AnalysisReport>(`/assets/${ticker}/analysis`, { params });
+      return data;
+    },
+    enabled: !!ticker,
+  });
+};
+
+// --- Portfolio Comparison ---
+export const useComparePortfolios = () => {
+  return useMutation({
+    mutationFn: async (portfolioIds: number[]) => {
+      const { data } = await api.post<ApiResponse<PortfolioComparison>>('/portfolios/compare', { portfolio_ids: portfolioIds });
+      return data;
+    },
+  });
+};
+
+// --- Retrospective Simulation COP/USD ---
+export const useSimulateRetrospective = () => {
+  return useMutation({
+    mutationFn: async (payload: RetrospectiveRequest) => {
+      const { data } = await api.post<ApiResponse<RetrospectiveResult>>('/simulate/retrospective', payload);
       return data;
     },
   });

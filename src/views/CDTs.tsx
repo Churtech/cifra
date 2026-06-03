@@ -12,6 +12,8 @@ const CDTsView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCDT, setSelectedCDT] = useState<ComparisonItem | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
   
   const { data: cdtsResponse, isLoading } = useCDTs();
   const cdts = cdtsResponse?.data || [];
@@ -137,14 +139,17 @@ const CDTsView: React.FC = () => {
             type='text' 
             placeholder='Buscar entidad...'
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className='w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:bg-white focus:border-primary transition-all'
           />
         </div>
         <div className='flex items-center justify-center bg-slate-50 border border-slate-100 rounded-xl p-2'>
           <div className='flex items-center gap-2 text-slate-500'>
             <Building2 size={14} />
-            <span className='text-[10px] font-bold uppercase tracking-widest'>Vigilado Superfinanciera</span>
+            <span className='text-[10px] font-bold uppercase tracking-widest'>Entidades Vigiladas por la SFC</span>
           </div>
         </div>
       </div>
@@ -155,7 +160,7 @@ const CDTsView: React.FC = () => {
             <div key={i} className='h-48 bg-slate-50 rounded-2xl animate-pulse border border-slate-100' />
           ))
         ) : (
-          filteredCDTs.length > 0 ? filteredCDTs.map((item: CDTDetail, idx: number) => {
+          filteredCDTs.length > 0 ? filteredCDTs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((item: CDTDetail, idx: number) => {
             const entityName = item?.cdt?.institution?.name || 'Banco Aliado';
             const isSelected = item?.cdt?.id ? selectedIds.includes(item.cdt.id) : false;
             return (
@@ -230,6 +235,34 @@ const CDTsView: React.FC = () => {
           )
         )}
       </div>
+
+      {/* Control de Paginación */}
+      {Math.ceil(filteredCDTs.length / ITEMS_PER_PAGE) > 1 && (
+        <div className='flex items-center justify-between bg-white border border-slate-100 px-6 py-4 rounded-2xl shadow-sm mt-8'>
+          <p className='text-xs text-slate-500 font-bold uppercase tracking-wider font-sans'>
+            Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredCDTs.length)} de {filteredCDTs.length} CDTs
+          </p>
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className='px-4 py-2 bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed transition-all'
+            >
+              Anterior
+            </button>
+            <span className='text-xs font-bold font-mono text-primary bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-150'>
+              Página {currentPage} de {Math.ceil(filteredCDTs.length / ITEMS_PER_PAGE)}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredCDTs.length / ITEMS_PER_PAGE), prev + 1))}
+              disabled={currentPage === Math.ceil(filteredCDTs.length / ITEMS_PER_PAGE)}
+              className='px-4 py-2 bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed transition-all'
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
 
       <ProjectionDrawer 
         comparisonItem={selectedCDT} 

@@ -1,11 +1,22 @@
-import React, { useMemo } from 'react';
-import { motion } from 'motion/react';
+import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import ReactECharts from 'echarts-for-react';
-import { Wallet, TrendingUp, DollarSign, PieChart, ArrowUpRight } from 'lucide-react';
+import { 
+  TrendingUp, 
+  DollarSign, 
+  PieChart, 
+  ArrowUpRight, 
+  Award, 
+  Shield, 
+  Zap, 
+  BookOpen, 
+  ChevronDown, 
+  ChevronUp 
+} from 'lucide-react';
 import StatCard from '../components/StatCard';
-import { useBestCDT, useMarketMetrics, useAssets, useTRMMetrics, useAssetHistory } from '../hooks/useFinance';
-import { formatCurrency, isValidNumber } from '../lib/utils';
-import { AssetDetail } from '../types';
+import { useBestCDT, useMarketMetrics, useAssets, useTRMMetrics, useAssetHistory, useAssetHighlights, useAssetDetail } from '../hooks/useFinance';
+import { formatCurrency, isValidNumber, cn } from '../lib/utils';
+import { AssetDetail, HistoryPoint } from '../types';
 
 interface DashboardProps {
   onViewChange?: (view: string) => void;
@@ -16,6 +27,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const { data: metricsResponse, isLoading: loadingMetrics } = useMarketMetrics();
   const { data: assetsResponse, isLoading: loadingAssets } = useAssets({ type: 'etf' });
   const { data: trmMetricsResponse } = useTRMMetrics(7);
+  const { data: etfHighlights, isLoading: loadingEtfHighlights } = useAssetHighlights('etf');
+  const { data: stockHighlights, isLoading: loadingStockHighlights } = useAssetHighlights('stock');
+  const { data: spyDetailResponse, isLoading: loadingSpy } = useAssetDetail('SPY');
+
+  const spyDetail = spyDetailResponse?.data;
+
+  const [activeHighlightTab, setActiveHighlightTab] = useState<'etf' | 'stock'>('etf');
+  const [expandedGrowthIdx, setExpandedGrowthIdx] = useState<number | null>(0);
+  const [expandedEfficiencyIdx, setExpandedEfficiencyIdx] = useState<number | null>(0);
+  const [expandedStabilityIdx, setExpandedStabilityIdx] = useState<number | null>(0);
+
+  const loadingHighlights = loadingEtfHighlights || loadingStockHighlights;
+  const currentHighlights = activeHighlightTab === 'etf' ? etfHighlights : stockHighlights;
 
   const metrics = metricsResponse?.data;
   const bestCDT = bestCDTResponse?.data;
@@ -26,6 +50,145 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const topAssetTicker = assets.length > 0 ? assets[0]?.asset?.ticker : '';
   const { data: historyResponse, isLoading: loadingHistory } = useAssetHistory(topAssetTicker, 30);
   const history = historyResponse?.data || [];
+
+  // ── Historiales de los 3 activos de cada categoría (ETF y Stock) ───────────
+  const eg0t = etfHighlights?.growth?.[0]?.asset?.asset?.ticker || '';
+  const eg1t = etfHighlights?.growth?.[1]?.asset?.asset?.ticker || '';
+  const eg2t = etfHighlights?.growth?.[2]?.asset?.asset?.ticker || '';
+  const ee0t = etfHighlights?.efficiency?.[0]?.asset?.asset?.ticker || '';
+  const ee1t = etfHighlights?.efficiency?.[1]?.asset?.asset?.ticker || '';
+  const ee2t = etfHighlights?.efficiency?.[2]?.asset?.asset?.ticker || '';
+  const es0t = etfHighlights?.stability?.[0]?.asset?.asset?.ticker || '';
+  const es1t = etfHighlights?.stability?.[1]?.asset?.asset?.ticker || '';
+  const es2t = etfHighlights?.stability?.[2]?.asset?.asset?.ticker || '';
+  const sg0t = stockHighlights?.growth?.[0]?.asset?.asset?.ticker || '';
+  const sg1t = stockHighlights?.growth?.[1]?.asset?.asset?.ticker || '';
+  const sg2t = stockHighlights?.growth?.[2]?.asset?.asset?.ticker || '';
+  const se0t = stockHighlights?.efficiency?.[0]?.asset?.asset?.ticker || '';
+  const se1t = stockHighlights?.efficiency?.[1]?.asset?.asset?.ticker || '';
+  const se2t = stockHighlights?.efficiency?.[2]?.asset?.asset?.ticker || '';
+  const ss0t = stockHighlights?.stability?.[0]?.asset?.asset?.ticker || '';
+  const ss1t = stockHighlights?.stability?.[1]?.asset?.asset?.ticker || '';
+  const ss2t = stockHighlights?.stability?.[2]?.asset?.asset?.ticker || '';
+
+  const { data: hEg0 } = useAssetHistory(eg0t, 90);
+  const { data: hEg1 } = useAssetHistory(eg1t, 90);
+  const { data: hEg2 } = useAssetHistory(eg2t, 90);
+  const { data: hEe0 } = useAssetHistory(ee0t, 90);
+  const { data: hEe1 } = useAssetHistory(ee1t, 90);
+  const { data: hEe2 } = useAssetHistory(ee2t, 90);
+  const { data: hEs0 } = useAssetHistory(es0t, 90);
+  const { data: hEs1 } = useAssetHistory(es1t, 90);
+  const { data: hEs2 } = useAssetHistory(es2t, 90);
+  const { data: hSg0 } = useAssetHistory(sg0t, 90);
+  const { data: hSg1 } = useAssetHistory(sg1t, 90);
+  const { data: hSg2 } = useAssetHistory(sg2t, 90);
+  const { data: hSe0 } = useAssetHistory(se0t, 90);
+  const { data: hSe1 } = useAssetHistory(se1t, 90);
+  const { data: hSe2 } = useAssetHistory(se2t, 90);
+  const { data: hSs0 } = useAssetHistory(ss0t, 90);
+  const { data: hSs1 } = useAssetHistory(ss1t, 90);
+  const { data: hSs2 } = useAssetHistory(ss2t, 90);
+
+  // Historiales activos según la pestaña seleccionada
+  const activeGrowthHistories = activeHighlightTab === 'etf'
+    ? [hEg0?.data || [], hEg1?.data || [], hEg2?.data || []]
+    : [hSg0?.data || [], hSg1?.data || [], hSg2?.data || []];
+  const activeEfficiencyHistories = activeHighlightTab === 'etf'
+    ? [hEe0?.data || [], hEe1?.data || [], hEe2?.data || []]
+    : [hSe0?.data || [], hSe1?.data || [], hSe2?.data || []];
+  const activeStabilityHistories = activeHighlightTab === 'etf'
+    ? [hEs0?.data || [], hEs1?.data || [], hEs2?.data || []]
+    : [hSs0?.data || [], hSs1?.data || [], hSs2?.data || []];
+
+  // Construye la opción ECharts para la mini-gráfica de 3 líneas dentro de cada card
+  const buildCardChartOption = (
+    histories: HistoryPoint[][],
+    tickers: string[],
+    colors: string[],
+    activeIndex: number | null = null
+  ) => {
+    const allDates = Array.from(new Set(
+      histories.flatMap(h => h.map(p => p.date))
+    )).sort();
+
+    if (allDates.length === 0) return null;
+
+    const labels = allDates.map(d =>
+      new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+    );
+
+    const buildSeries = (hist: HistoryPoint[], ticker: string, color: string, index: number) => {
+      if (hist.length === 0) return null;
+      const isActive = activeIndex === null || activeIndex === index;
+      const lineOpacity = isActive ? 1 : 0.12;
+      const areaOpacity = isActive ? 1 : 0.04;
+      const lineWidth = isActive && activeIndex !== null ? 3 : 2.5;
+
+      const firstClose = hist[0].close || 1;
+      const priceMap = new Map<string, number>();
+      hist.forEach(p => {
+        const v = p.normalized_price !== undefined
+          ? p.normalized_price
+          : (p.close / firstClose) * 100;
+        priceMap.set(p.date, v);
+      });
+      let last = 100;
+      const data = allDates.map(d => {
+        if (priceMap.has(d)) last = priceMap.get(d)!;
+        return Number(last.toFixed(2));
+      });
+      return {
+        name: ticker,
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data,
+        lineStyle: { width: lineWidth, color, opacity: lineOpacity },
+        itemStyle: { color, opacity: lineOpacity },
+        areaStyle: {
+          opacity: areaOpacity,
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: color + '55' },
+              { offset: 1, color: color + '00' }
+            ]
+          }
+        }
+      };
+    };
+
+    const series = histories
+      .map((h, i) => buildSeries(h, tickers[i] || `#${i + 1}`, colors[i], i))
+      .filter(Boolean);
+
+    if (series.length === 0) return null;
+
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255,255,255,0.97)',
+        borderColor: '#E5E7EB',
+        borderWidth: 1,
+        padding: [6, 10],
+        textStyle: { fontSize: 10, color: '#111827', fontFamily: 'Inter' },
+        formatter: (params: any) => {
+          let r = `<div style="font-size:9px;font-weight:800;color:#94a3b8;margin-bottom:4px;text-transform:uppercase">${params[0].name}</div>`;
+          params.forEach((p: any) => {
+            r += `<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:2px"><span style="font-size:10px;color:#64748b">${p.marker}${p.seriesName}</span><strong style="font-size:10px;color:#1e293b">${p.value.toFixed(2)}</strong></div>`;
+          });
+          return r;
+        }
+      },
+      grid: { left: 4, right: 4, top: 6, bottom: 4, containLabel: false },
+      xAxis: { type: 'category', show: false, data: labels, boundaryGap: false },
+      yAxis: { type: 'value', show: false, min: 'dataMin', max: 'dataMax' },
+      series
+    };
+  };
 
   const currentTRM = trmMetrics?.current || metrics?.trm_current;
   const trmChange = trmMetrics?.change_7d || metrics?.trm_change_7d;
@@ -164,6 +327,150 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
     ]
   };
 
+  const renderHighlightColumn = (
+    title: string,
+    description: string,
+    items: any[] | undefined,
+    expandedIdx: number | null,
+    setExpandedIdx: (idx: number | null) => void,
+    categoryColor: 'emerald' | 'amber' | 'blue',
+    categoryIcon: React.ReactNode,
+    cardHistories: HistoryPoint[][],
+    cardColors: string[]
+  ) => {
+    // Extraer tickers para la gráfica; activeIndex para el efecto de foco
+    const chartTickers = (items || []).slice(0, 3).map((item: any) => item.asset?.asset?.ticker || '');
+    const chartOption = buildCardChartOption(cardHistories, chartTickers, cardColors, expandedIdx);
+
+    return (
+      <div className={cn(
+        "bg-white border rounded-[24px] overflow-hidden",
+        categoryColor === 'emerald' && "border-emerald-100",
+        categoryColor === 'amber' && "border-amber-100",
+        categoryColor === 'blue' && "border-blue-100"
+      )}>
+        {/* Chart hero — ocupa todo el ancho de la card sin padding lateral */}
+        <div className="relative w-full h-[160px]">
+          {chartOption ? (
+            <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center bg-slate-50/60 animate-pulse">
+              <p className="text-[8px] text-slate-300 font-bold uppercase tracking-widest">Cargando trayectorias...</p>
+            </div>
+          )}
+          {/* Badge de categoría superpuesto arriba-izquierda */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            <span className={cn(
+              "w-6 h-6 rounded-lg flex items-center justify-center",
+              categoryColor === 'emerald' && "bg-emerald-500/90 text-white",
+              categoryColor === 'amber' && "bg-amber-500/90 text-white",
+              categoryColor === 'blue' && "bg-blue-500/90 text-white"
+            )}>
+              {categoryIcon}
+            </span>
+            <span className="text-[8px] font-bold text-white/90 uppercase tracking-widest drop-shadow">{description}</span>
+          </div>
+        </div>
+
+        {/* Contenido de la card: título + items */}
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-primary leading-tight">{title}</h3>
+            <p className={cn(
+              "text-[8px] font-bold uppercase tracking-widest",
+              categoryColor === 'emerald' && 'text-emerald-400',
+              categoryColor === 'amber' && 'text-amber-400',
+              categoryColor === 'blue' && 'text-blue-400'
+            )}>Base 100 · 90D</p>
+          </div>
+
+          {/* Items */}
+          <div className="space-y-2">
+            {loadingHighlights ? (
+              [0,1,2].map(i => (
+                <div key={i} className="h-14 bg-white border border-slate-100 animate-pulse rounded-2xl" />
+              ))
+            ) : items && items.length > 0 ? (
+              items.slice(0, 3).map((item, idx) => {
+                const isExpanded = expandedIdx === idx;
+                const asset = item.asset?.asset;
+                const metricName = item.metric_name;
+                const metricValue = item.metric_value;
+                const analysis = item.analysis;
+
+                return (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "bg-white border rounded-2xl overflow-hidden transition-all duration-200",
+                      isExpanded ? "border-slate-200 shadow-sm" : "border-slate-100 hover:border-slate-200"
+                    )}
+                  >
+                    <button
+                      onClick={() => setExpandedIdx(isExpanded ? null : idx)}
+                      className="w-full text-left p-3 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {/* Dot del color correspondiente a la línea en la gráfica */}
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: cardColors[idx] }}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-primary truncate">{asset?.ticker}</span>
+                            <span className="text-[8px] font-bold text-slate-400 px-1 bg-slate-50 rounded uppercase shrink-0">{asset?.type === 'etf' ? 'ETF' : 'Acción'}</span>
+                          </div>
+                          <p className="text-[9px] text-slate-400 truncate max-w-[110px] font-medium leading-none mt-0.5">{asset?.name}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={cn(
+                          "text-[11px] font-mono font-bold px-2 py-0.5 rounded-lg",
+                          categoryColor === 'emerald' && "bg-emerald-50 text-emerald-700",
+                          categoryColor === 'amber' && "bg-amber-50 text-amber-700",
+                          categoryColor === 'blue' && "bg-blue-50 text-blue-700"
+                        )}>
+                          {metricValue}
+                        </span>
+                        {isExpanded ? <ChevronUp size={12} className="text-slate-400" /> : <ChevronDown size={12} className="text-slate-400" />}
+                      </div>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="border-t border-slate-50 bg-slate-50/30 text-[10px] text-slate-500 leading-relaxed font-medium p-3"
+                        >
+                          <div className="flex items-start gap-2">
+                            <BookOpen size={11} className="text-slate-400 mt-0.5 shrink-0" />
+                            <div>
+                              <span className="font-bold text-slate-600 block mb-0.5">{metricName}</span>
+                              {analysis}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="py-8 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+                No hay datos disponibles
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className='space-y-6'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
@@ -178,17 +485,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         <StatCard
-          label={loadingCDT ? 'Sincronizando...' : 'Mejor CDT'}
-          value={loadingCDT ? '...' : (isValidNumber(bestCDTValue) ? bestCDTValue.toFixed(2) : '0.00')}
-          suffix='%'
-          subtitle={bestCDTEntity}
-          icon={Wallet}
-          color='emerald'
-          onClick={() => onViewChange?.('cdts')}
-        />
-        <StatCard
           label='TRM Actual'
-          value={loadingMetrics ? '...' : formatCurrency(currentTRM)}
+          value={loadingMetrics ? '...' : formatCurrency(currentTRM, 2)}
           change={isValidNumber(trmChange) ? Number(trmChange.toFixed(2)) : undefined}
           subtitle={metrics?.timestamp ? `Vigente: ${new Date(metrics.timestamp).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}` : undefined}
           tooltip="La TRM mostrada fue certificada con las operaciones de hoy y rige legalmente para el día siguiente (T+1)."
@@ -196,10 +494,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           color='primary'
         />
         <StatCard
-          label='Mejor ETF'
-          value={loadingAssets ? '...' : (assets.length > 0 && isValidNumber(assets[0]?.annual_return) ? assets[0]?.annual_return.toFixed(2) : '0.00')}
-          suffix='%'
-          subtitle={assets.length > 0 ? assets[0]?.asset?.ticker : undefined}
+          label='Mejor Tasa CDT'
+          value={loadingCDT ? '...' : (isValidNumber(bestCDTValue) ? bestCDTValue.toFixed(2) : '0.00')}
+          suffix='% E.A.'
+          subtitle={bestCDTEntity || 'CDT Colombia'}
+          tooltip="La tasa de interés anualizada más alta actualmente reportada en el simulador de CDTs."
+          icon={Award}
+          color='emerald'
+          onClick={() => onViewChange?.('cdts')}
+        />
+        <StatCard
+          label='S&P 500 (SPY)'
+          value={loadingSpy ? '...' : (isValidNumber(spyDetail?.price_usd) ? spyDetail.price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00')}
+          suffix=' USD'
+          change={isValidNumber(spyDetail?.change_7d) ? Number(spyDetail.change_7d.toFixed(2)) : undefined}
+          subtitle="Índice Accionario USA"
+          tooltip="Precio de cierre de SPY (SPDR S&P 500 ETF Trust), el benchmark del mercado bursátil global."
           icon={TrendingUp}
           color='amber'
           onClick={() => onViewChange?.('assets')}
@@ -207,15 +517,65 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         <StatCard
           label='Inflación IPC'
           value={loadingMetrics ? '...' : (isValidNumber(inflation) ? inflation.toFixed(2) : '0.00')}
-          suffix={(isValidNumber(inflation)) ? '%' : ''}
-          subtitle={metrics?.timestamp ? `Vigente: ${new Date(metrics.timestamp).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}` : undefined}
+          suffix='%'
+          subtitle="Variación Anualizada"
+          tooltip="Variación anualizada del Índice de Precios al Consumidor (IPC) certificado por el DANE."
           icon={PieChart}
           color='rose'
           onClick={() => onViewChange?.('metrics')}
         />
       </div>
 
-      <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
+      {/* Destacados del Mercado Section */}
+      <div className='bg-white border border-slate-100 p-6 md:p-8 shadow-sm rounded-[32px] transition-all hover:shadow-md space-y-6'>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div className="space-y-1">
+            <h3 className="font-serif text-2xl text-primary tracking-tight">Destacados del Mercado</h3>
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+              Top 3 activos según su comportamiento histórico. Sin sesgos ni sugerencias de inversión.
+            </p>
+          </div>
+          <div className="flex bg-slate-50 p-1 rounded-full border border-slate-100 shadow-inner shrink-0 self-start sm:self-auto">
+            <button
+              onClick={() => {
+                setActiveHighlightTab('etf');
+                setExpandedGrowthIdx(0);
+                setExpandedEfficiencyIdx(0);
+                setExpandedStabilityIdx(0);
+              }}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-bold transition-all",
+                activeHighlightTab === 'etf' ? "text-primary shadow-sm bg-white border border-slate-100" : "text-slate-400 hover:text-slate-600 bg-transparent border border-transparent"
+              )}
+            >
+              ETFs
+            </button>
+            <button
+              onClick={() => {
+                setActiveHighlightTab('stock');
+                setExpandedGrowthIdx(0);
+                setExpandedEfficiencyIdx(0);
+                setExpandedStabilityIdx(0);
+              }}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-bold transition-all",
+                activeHighlightTab === 'stock' ? "text-primary shadow-sm bg-white border border-slate-100" : "text-slate-400 hover:text-slate-600 bg-transparent border border-transparent"
+              )}
+            >
+              Acciones
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {renderHighlightColumn("Líderes de Crecimiento", "Rendimiento 30D", currentHighlights?.growth, expandedGrowthIdx, setExpandedGrowthIdx, "emerald", <Zap size={16} />, activeGrowthHistories, ['#10B981','#34D399','#6EE7B7'])}
+          {renderHighlightColumn("Rendimiento Inteligente", "Eficiencia Sharpe 90D", currentHighlights?.efficiency, expandedEfficiencyIdx, setExpandedEfficiencyIdx, "amber", <Award size={16} />, activeEfficiencyHistories, ['#F59E0B','#FBBF24','#FCD34D'])}
+          {renderHighlightColumn("Inversión Estable", "Menor Volatilidad 180D", currentHighlights?.stability, expandedStabilityIdx, setExpandedStabilityIdx, "blue", <Shield size={16} />, activeStabilityHistories, ['#3B82F6','#60A5FA','#93C5FD'])}
+        </div>
+
+      </div>
+
+      <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
         <div className='xl:col-span-2 bg-white border border-slate-100 p-6 md:p-8 shadow-sm rounded-[32px] transition-all hover:shadow-md'>
           <div className='flex items-start justify-between mb-8'>
             <div className='space-y-1.5'>
@@ -243,14 +603,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
               <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
               <div>
                 <p className='text-[8px] font-bold text-slate-400 uppercase tracking-widest'>Max 52s TRM</p>
-                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmHigh && trmHigh > 0) ? formatCurrency(trmHigh) : formatCurrency(4150)}</p>
+                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmHigh && trmHigh > 0) ? formatCurrency(trmHigh, 2) : formatCurrency(4150, 2)}</p>
               </div>
             </div>
             <div className='flex items-center gap-3'>
               <div className='w-1.5 h-1.5 rounded-full bg-slate-200' />
               <div>
                 <p className='text-[8px] font-bold text-slate-400 uppercase tracking-widest'>Min 52s TRM</p>
-                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmLow && trmLow > 0) ? formatCurrency(trmLow) : formatCurrency(3720)}</p>
+                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmLow && trmLow > 0) ? formatCurrency(trmLow, 2) : formatCurrency(3720, 2)}</p>
               </div>
             </div>
           </div>

@@ -22,7 +22,7 @@ const Header: React.FC = () => {
   const assets = assetsResponse?.data || [];
 
   const tickerItems = [
-    ...(currentTRM ? [{ label: 'TRM', value: formatCurrency(currentTRM), change: trmChange || 0 }] : []),
+    ...(currentTRM ? [{ label: 'TRM', value: formatCurrency(currentTRM, 2), change: trmChange || 0 }] : []),
     ...assets.slice(0, 10).map((item: AssetDetail) => {
       const activeChange = (item?.change_1d && item?.change_1d !== 0)
         ? item?.change_1d

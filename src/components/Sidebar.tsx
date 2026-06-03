@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, TrendingUp, PieChart, Menu, X, ShieldCheck, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, TrendingUp, PieChart, Menu, X, ShieldCheck, Briefcase, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -9,13 +9,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
   const menuItems = [
     { id: 'dashboard', label: 'Panorama General', icon: LayoutDashboard },
     { id: 'cdts', label: 'CDTs & Renta Fija', icon: Wallet },
     { id: 'assets', label: 'Acciones & ETFs', icon: BarChart3 },
     { id: 'portfolios', label: 'Simulador Portafolios', icon: Briefcase },
+    { id: 'retrospective', label: 'Simulador Retrospectivo', icon: History },
     { id: 'compare', label: 'Comparativa Real', icon: ArrowLeftRight },
     { id: 'correlations', label: 'Correlaciones', icon: PieChart },
     { id: 'metrics', label: 'Métricas de Mercado', icon: TrendingUp },
@@ -77,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
                           if (window.innerWidth < 1024) setIsOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group relative",
+                          "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group relative text-left",
                           isActive 
                             ? 'bg-primary text-white shadow-lg shadow-primary/10' 
                             : 'text-slate-500 hover:bg-slate-50 hover:text-primary'
@@ -99,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
                 <div className="pt-8 border-t border-slate-50">
                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Recursos</p>
                    <div className="space-y-1">
-                     <button className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-primary transition-all">
+                     <button className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-primary transition-all text-left">
                        <ShieldCheck size={18} className="text-slate-400" />
                        <span className="text-sm font-medium">Seguridad de Datos</span>
                      </button>

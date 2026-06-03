@@ -87,7 +87,7 @@ const MetricsView: React.FC = () => {
         </div>
       </div>
 
-      <div className='grid grid-cols-1 xl:grid-cols-3 gap-8'>
+      <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8'>
         <div className='xl:col-span-1 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col'>
           <div className='flex items-center gap-3 mb-2'>
              <Gauge size={20} className='text-slate-600' />

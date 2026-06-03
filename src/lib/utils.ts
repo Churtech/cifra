@@ -5,14 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(value: number | string | null | undefined) {
+export function formatCurrency(value: number | string | null | undefined, fractionDigits?: number) {
   const num = typeof value === 'string' ? parseFloat(value) : (value as number);
   if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '---';
   
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: fractionDigits !== undefined ? fractionDigits : 0,
+    maximumFractionDigits: fractionDigits !== undefined ? fractionDigits : 0,
   }).format(num);
 }
 
