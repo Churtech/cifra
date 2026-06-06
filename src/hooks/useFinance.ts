@@ -50,9 +50,9 @@ export const useAssets = (params?: { type?: 'etf' | 'stock'; days?: number; inve
   return useQuery({
     queryKey: ['assets', params],
     queryFn: async () => {
-      console.log('Fetching assets with params:', params);
+      if (import.meta.env.DEV) console.log('Fetching assets with params:', params);
       const { data } = await api.get<ApiResponse<AssetDetail[]>>('/assets', { params });
-      console.log('Raw Assets Response:', data);
+      if (import.meta.env.DEV) console.log('Raw Assets Response:', data);
       
       if (data?.data && Array.isArray(data.data)) {
         // Limpieza preventiva: asegurar tipos numéricos
@@ -64,7 +64,7 @@ export const useAssets = (params?: { type?: 'etf' | 'stock'; days?: number; inve
             volatility: Number(item.volatility || 0)
         }));
       } else {
-        console.warn('API returned non-array or empty data for assets:', data);
+        if (import.meta.env.DEV) console.warn('API returned non-array or empty data for assets:', data);
       }
       return data;
     },
@@ -295,7 +295,7 @@ export const useMarketMetrics = () => {
     queryKey: ['metrics'],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<any>>('/metrics');
-      console.log('Market Metrics API Response:', data);
+      if (import.meta.env.DEV) console.log('Market Metrics API Response:', data);
       
       // Mapeo defensivo ultra-robusto
       if (data && data.data) {
@@ -305,7 +305,7 @@ export const useMarketMetrics = () => {
           (data.data.inflation || data.data.ipc || 0)
         );
           
-        console.log('Final Mapped IPC:', data.data.inflation_rate);
+        if (import.meta.env.DEV) console.log('Final Mapped IPC:', data.data.inflation_rate);
       }
       
       return data as ApiResponse<MarketMetrics>;
@@ -318,7 +318,7 @@ export const useTRMMetrics = (days: number = 30) => {
     queryKey: ['metrics', 'trm', days],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<any>>('/trm/metrics', { params: { days } });
-      console.log('TRM Metrics Raw:', data);
+      if (import.meta.env.DEV) console.log('TRM Metrics Raw:', data);
       
       // Mapeo defensivo según la estructura observada
       const trm = {
