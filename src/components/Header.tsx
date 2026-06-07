@@ -3,7 +3,7 @@ import { Search, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import { useMarketMetrics, useAssets } from '../hooks/useFinance';
 import { formatCurrency } from '../lib/utils';
 import { AssetDetail } from '../types';
-import brandLogo from '@/assets/icon-fincompare.webp';
+import brandLogo from '@/assets/icon-cifra.webp';
 
 const Header: React.FC = () => {
   const [time, setTime] = useState(new Date());

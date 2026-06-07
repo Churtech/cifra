@@ -2,7 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, TrendingUp, PieChart, Menu, X, ShieldCheck, Briefcase, History, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import brandLogo from '@/assets/logo-fincompare.webp';
+import brandLogo from '@/assets/logo-cifra.webp';
 import { useAuth } from '../context/AuthContext';
 
 
