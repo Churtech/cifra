@@ -6,14 +6,14 @@ export function WhatsNewModal() {
 
   useEffect(() => {
     // Check if the user has already seen the v1.1.1 release notes
-    const hasSeen = localStorage.getItem('cifra_seen_v1.1.1');
+    const hasSeen = localStorage.getItem('cifra_seen_v1.1.1_rev2');
     if (!hasSeen) {
       setIsOpen(true);
     }
   }, []);
 
   const handleClose = () => {
-    localStorage.setItem('cifra_seen_v1.1.1', 'true');
+    localStorage.setItem('cifra_seen_v1.1.1_rev2', 'true');
     setIsOpen(false);
   };
 
@@ -31,17 +31,17 @@ export function WhatsNewModal() {
         
         <div className="p-8 space-y-8 text-slate-600">
           <p className="text-base leading-relaxed">
-            Hemos desplegado un hotfix importante enfocado en la estabilidad, seguridad y precisión del sistema:
+            Hemos actualizado la plataforma con mejoras enfocadas en darte una experiencia mucho más rápida y confiable:
           </p>
 
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="mt-1 bg-slate-50 p-2.5 rounded-lg text-slate-900 h-fit border border-slate-200 shadow-sm">
-                <ShieldCheck size={20} />
+                <Zap size={20} />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 tracking-tight">Corrección Crítica (Portafolios)</h3>
-                <p className="text-sm mt-1">Resolvimos un fallo de rendimiento en la vista comparativa que causaba bloqueos de memoria (infinite loops).</p>
+                <h3 className="font-semibold text-slate-900 tracking-tight">Experiencia más fluida</h3>
+                <p className="text-sm mt-1">Solucionamos un inconveniente que podía ralentizar la pantalla al comparar portafolios. Ahora la navegación y los tiempos de espera son inmediatos.</p>
               </div>
             </div>
 
@@ -50,18 +50,18 @@ export function WhatsNewModal() {
                 <Sparkles size={20} />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 tracking-tight">Precisión Financiera (Backend)</h3>
-                <p className="text-sm mt-1">El esquema de base de datos y motores de cálculo ahora utilizan precisión decimal (NUMERIC/float64) para las inversiones totales, evitando truncamientos.</p>
+                <h3 className="font-semibold text-slate-900 tracking-tight">Cálculos más precisos</h3>
+                <p className="text-sm mt-1">Mejoramos nuestros motores internos para manejar los montos de inversión con exactitud milimétrica, asegurando simulaciones 100% fiables.</p>
               </div>
             </div>
 
             <div className="flex gap-4">
               <div className="mt-1 bg-emerald-50/50 p-2.5 rounded-lg text-emerald-600 h-fit border border-emerald-100 shadow-sm">
-                <Zap size={20} />
+                <ShieldCheck size={20} />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 tracking-tight">Higiene y Seguridad</h3>
-                <p className="text-sm mt-1">Eliminamos código muerto (comparison_service) y reforzamos la validación de credenciales en tareas automáticas.</p>
+                <h3 className="font-semibold text-slate-900 tracking-tight">Plataforma más estable</h3>
+                <p className="text-sm mt-1">Optimizamos los procesos de fondo para que la terminal sea más robusta y mantenga un rendimiento óptimo durante tus análisis diarios.</p>
               </div>
             </div>
           </div>
