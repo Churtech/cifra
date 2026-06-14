@@ -83,7 +83,7 @@ function AppContent() {
             <a href="#" className="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">Soberanía de Datos</a>
             <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              v1.0.0 - Red
+              v1.1.0 - Red
             </div>
           </div>
         </footer>
