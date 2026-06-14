@@ -35,6 +35,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
     { id: 'metrics', label: 'Métricas de Mercado', icon: TrendingUp },
   ];
 
+  if (user?.email === 'juanesteban.paezalbarracin@gmail.com') {
+    menuItems.push({ id: 'sys-ops', label: 'Administración', icon: ShieldCheck });
+  }
+
   return (
     <>
       {/* Mobile Toggle Button */}

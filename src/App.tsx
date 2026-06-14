@@ -18,6 +18,7 @@ const MetricsView = lazy(() => import('./views/Metrics'));
 const PortfoliosView = lazy(() => import('./views/Portfolios'));
 const RetrospectiveSimulator = lazy(() => import('./views/RetrospectiveSimulator'));
 const ScenarioSimulator = lazy(() => import('./views/ScenarioSimulator'));
+const AdminPanel = lazy(() => import('./views/AdminPanel'));
 
 function AppContent() {
   const { user } = useAuth();
@@ -59,6 +60,7 @@ function AppContent() {
                     <Route path="/correlations" element={<CorrelationsView />} />
                     <Route path="/metrics" element={<MetricsView />} />
                     <Route path="/portfolios" element={<PortfoliosView onViewChange={handleViewChange} />} />
+                    <Route path="/sys-ops" element={<AdminPanel />} />
                     <Route path="/retrospective" element={<RetrospectiveSimulator />} />
                     <Route path="/scenarios" element={<ScenarioSimulator />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
