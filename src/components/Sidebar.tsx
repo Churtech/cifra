@@ -2,7 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Wallet, BarChart3, ArrowLeftRight, TrendingUp, PieChart, Menu, X, ShieldCheck, Briefcase, History, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import brandLogo from '@/assets/logo-cifra.webp';
+import brandLogo from '@/assets/cifra-logo-white.webp';
 import { useAuth } from '../context/AuthContext';
 
 
@@ -71,11 +71,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
 
               {/* Logo section */}
               <div className="flex flex-col items-center gap-1 mb-8 w-full">
-                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '150px' }}>
+                <div className="w-full flex items-center justify-center ">
                   <img
                     src={brandLogo}
                     alt="Cifra Logo"
-                    style={{ width: '450px', maxWidth: 'none', height: 'auto', objectFit: 'contain' }}
+                    style={{ width: '300px', maxWidth: 'none', height: 'auto', objectFit: 'cover' }}
                   />
                 </div>
               </div>

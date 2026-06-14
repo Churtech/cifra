@@ -85,6 +85,8 @@ export interface MarketMetrics {
   trm_current: number;
   trm_change_7d: number;
   trm_change_30d: number;
+  trm_high_52w?: number;
+  trm_low_52w?: number;
   inflation_rate: number;
   timestamp: string;
 }

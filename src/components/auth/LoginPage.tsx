@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, Loader2, ShieldAlert, CheckCircle2, MailCheck } from 'lucide-react';
 import { motion } from 'motion/react';
-import brandLogo from '@/assets/logo-cifra.webp';
+import brandLogo from '@/assets/cifra-logo-white.webp';
 
 export const LoginPage: React.FC = () => {
   const { login, signUp } = useAuth();

@@ -27,7 +27,7 @@ export const refreshSessionToken = async (): Promise<string | null> => {
       return refreshData.session.access_token;
     }
   } catch (err) {
-    console.error('[Auth] Failed to refresh session token:', err);
+    // Session refresh failed; fallback handles null state
   }
   currentAccessToken = null;
   return null;
@@ -58,14 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentAccessToken = session.access_token;
       }
       setLoading(false);
-    }).catch((err) => {
-      console.error('[Auth] Initial session retrieval failed:', err);
+    }).catch(() => {
       setLoading(false);
     });
 
     // Listen to auth state changes (sign in, sign out, token refresh, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`[Auth] Event: ${event}`);
       if (session) {
         setUser(session.user);
         setToken(session.access_token);

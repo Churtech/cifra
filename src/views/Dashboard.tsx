@@ -17,6 +17,7 @@ import StatCard from '../components/StatCard';
 import { useDashboardSummary, useAssets, useAssetDetail } from '../hooks/useFinance';
 import { formatCurrency, isValidNumber, cn } from '../lib/utils';
 import { AssetDetail, HistoryPoint } from '../types';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 interface DashboardProps {
   onViewChange?: (view: string) => void;
@@ -223,8 +224,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const trmChange = trmMetrics?.change_7d || metrics?.trm_change_7d;
   const inflation = metrics?.inflation_rate;
 
-  const trmHigh = trmMetrics?.high_52w;
-  const trmLow = trmMetrics?.low_52w;
+  const trmHigh = metrics?.trm_high_52w;
+  const trmLow = metrics?.trm_low_52w;
 
   // Cálculo de trayectorias normalizadas (Base 100 vs Base 100)
   const chartData = useMemo(() => {
@@ -378,7 +379,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         {/* Chart hero — ocupa todo el ancho de la card sin padding lateral */}
         <div className="relative w-full h-[160px]">
           {chartOption ? (
-            <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+            <ErrorBoundary fallbackMessage="Failed to load chart data. No default data is shown.">
+              <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+            </ErrorBoundary>
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-slate-50/60 animate-pulse">
               <p className="text-[8px] text-slate-300 font-bold uppercase tracking-widest">Cargando trayectorias...</p>
@@ -621,7 +624,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
                 <span className='text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]'>Auditando Mercados Históricos...</span>
               </div>
             ) : (
-              <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+              <ErrorBoundary fallbackMessage="Failed to load comparative trajectory chart. No default data is shown.">
+                <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+              </ErrorBoundary>
             )}
           </div>
           <div className='mt-8 pt-6 border-t border-slate-50 flex flex-wrap items-center gap-8'>
@@ -629,14 +634,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
               <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
               <div>
                 <p className='text-[8px] font-bold text-slate-400 uppercase tracking-widest'>Max 52s TRM</p>
-                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmHigh && trmHigh > 0) ? formatCurrency(trmHigh, 2) : formatCurrency(4150, 2)}</p>
+                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmHigh && trmHigh > 0) ? formatCurrency(trmHigh, 2) : '---'}</p>
               </div>
             </div>
             <div className='flex items-center gap-3'>
               <div className='w-1.5 h-1.5 rounded-full bg-slate-200' />
               <div>
                 <p className='text-[8px] font-bold text-slate-400 uppercase tracking-widest'>Min 52s TRM</p>
-                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmLow && trmLow > 0) ? formatCurrency(trmLow, 2) : formatCurrency(3720, 2)}</p>
+                <p className='text-sm font-mono font-bold text-primary tracking-tighter'>{(trmLow && trmLow > 0) ? formatCurrency(trmLow, 2) : '---'}</p>
               </div>
             </div>
           </div>

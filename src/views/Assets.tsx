@@ -4,6 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { ArrowUpRight, ArrowDownRight, Shield, Zap, Activity, Search, Database, BookOpen, ChevronRight, AlertTriangle, Info } from 'lucide-react';
 import { useAssets, useAssetHistory, useMarketMetrics, useAssetAnalysis } from '../hooks/useFinance';
 import { cn, isValidNumber } from '../lib/utils';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AssetDetail } from '../types';
 
 const AssetsView: React.FC = () => {
@@ -262,7 +263,9 @@ const AssetsView: React.FC = () => {
                     <h4 className='text-[10px] font-bold text-slate-500 uppercase tracking-widest'>Historial {isNormalized ? 'Normalizado' : 'Sincronizado'}</h4>
                   </div>
                   <div className='h-[300px] w-full'>
+                  <ErrorBoundary fallbackMessage="Failed to load asset chart. No default data is shown.">
                     <ReactECharts option={chartOption} style={{ height: '100%', width: '100%' }} />
+                  </ErrorBoundary>
                   </div>
                 </div>
 

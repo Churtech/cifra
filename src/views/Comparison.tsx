@@ -320,7 +320,9 @@ const ComparisonView: React.FC = () => {
               <th className='px-6 py-5 text-right text-[10px] font-bold text-primary uppercase tracking-widest whitespace-nowrap bg-slate-50/30'>
                 <div className='flex items-center justify-end gap-1.5'>
                   Retorno Real en COP
-                  <Info size={12} className='text-slate-300 cursor-help' title="Calcula cuánto tendrías hoy en Pesos Colombianos, incluyendo la variación de la TRM frente al USD." />
+                  <span title="Calcula cuánto tendrías hoy en Pesos Colombianos, incluyendo la variación de la TRM frente al USD.">
+                    <Info size={12} className='text-slate-300 cursor-help' />
+                  </span>
                 </div>
               </th>
               <th className='px-6 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Valor Proyectado</th>

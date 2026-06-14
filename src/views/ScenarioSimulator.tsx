@@ -1317,7 +1317,7 @@ const ScenarioSimulator: React.FC = () => {
                       height={36} 
                       iconType="circle"
                       iconSize={8}
-                      wrapperStyle={{ fontSize: 10, fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', tracking: '0.1em' }}
+                      wrapperStyle={{ fontSize: 10, fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}
                     />
                     
                     {/* Probabilistic Area (P10-P90) */}
